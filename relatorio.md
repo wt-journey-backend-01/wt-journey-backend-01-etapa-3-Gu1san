@@ -1,217 +1,284 @@
 <sup>Esse é um feedback gerado por IA, ele pode conter erros.</sup>
 
-Você tem 9 créditos restantes para usar o sistema de feedback AI.
+Você tem 8 créditos restantes para usar o sistema de feedback AI.
 
 # Feedback para Gu1san:
 
-Nota final: **4.4/100**
+Nota final: **8.7/100**
 
-Olá, Gu1san! 👋✨
+# Feedback para Gu1san 🚔🚀
 
-Primeiramente, parabéns por todo o esforço que você colocou nesse desafio da API para o Departamento de Polícia! 🚓👮‍♂️ Construir uma API RESTful com Node.js e Express é uma ótima forma de aprender conceitos essenciais para backend, e você já tem uma base muito boa para crescer ainda mais. 🎉
-
----
-
-## 🎯 O que você mandou muito bem
-
-- Você organizou seu projeto em pastas separadas para **rotas, controladores e repositórios**, o que é essencial para manter o código limpo e escalável. Isso mostra que você já entende o conceito de arquitetura modular. 👏
-- O uso do `express.json()` no `server.js` está correto para receber payloads JSON.
-- Os controllers para os agentes estão bem estruturados, com tratamento de erros e validação básica.
-- Você implementou os métodos HTTP principais (GET, POST, PUT, PATCH, DELETE) para os recursos `/agentes` e `/casos`.
-- Fez validações de campos obrigatórios e retornos com status HTTP adequados (como 201 para criação e 404 para não encontrado).
-- Parabéns também por já ter iniciado os bônus, como filtros e mensagens de erro customizadas, mesmo que ainda não estejam 100%! Isso mostra que você está buscando se desafiar mais. 💪
+Olá, Gu1san! Que jornada intensa essa de migrar sua API para usar PostgreSQL com Knex.js, hein? Antes de tudo, quero celebrar com você os passos que já estão no caminho certo! 🎉 Você estruturou bem a API com rotas, controllers e repositories, e implementou validações importantes nos controladores, além de usar o Knex para interagir com o banco. Isso é uma base sólida que muitos esquecem! Também vi que você criou migrations e seeds para popular as tabelas, o que é essencial para um projeto profissional. Parabéns por essa dedicação! 👏
 
 ---
 
-## 🕵️‍♂️ Onde o código precisa de ajustes fundamentais (vamos destravar seu projeto!)
+## Vamos analisar juntos os pontos que precisam de atenção para destravar sua API e fazer tudo funcionar perfeitamente! 🔍
 
-### 1. **Uso de banco de dados e armazenamento em memória**
+### 1. Estrutura do Projeto e Arquivos Obrigatórios
 
-Ao analisar seus repositórios (`agentesRepository.js` e `casosRepository.js`), percebi que você está usando o `knex` para acessar um banco de dados PostgreSQL (via `db("agentes")`, `db("casos")`), mas o desafio pedia para armazenar os dados **em memória**, usando arrays simples dentro dos repositórios.
+Percebi que o arquivo **`INSTRUCTIONS.md`** está faltando no seu repositório, conforme indicado pelo relatório. Esse arquivo é parte da estrutura esperada e pode conter instruções importantes para o funcionamento correto do projeto.
 
-Por exemplo, seu `agentesRepository.js` tem funções assim:
+Além disso, a estrutura que esperamos para o desafio é esta aqui:
 
-```js
-async function getAllAgentes() {
-  return await db("agentes").select("*");
-}
+```
+📦 SEU-REPOSITÓRIO
+│
+├── package.json
+├── server.js
+├── knexfile.js
+├── INSTRUCTIONS.md
+│
+├── db/
+│   ├── migrations/
+│   ├── seeds/
+│   └── db.js
+│
+├── routes/
+│   ├── agentesRoutes.js
+│   └── casosRoutes.js
+│
+├── controllers/
+│   ├── agentesController.js
+│   └── casosController.js
+│
+├── repositories/
+│   ├── agentesRepository.js
+│   └── casosRepository.js
+│
+└── utils/
+    └── errorHandler.js
 ```
 
-Mas o esperado era algo como:
-
-```js
-const agentes = [];
-
-function getAllAgentes() {
-  return agentes;
-}
-
-function createAgente(agente) {
-  agentes.push(agente);
-  return agente;
-}
-
-// e assim por diante...
-```
-
-**Por que isso é importante?**  
-O desafio explicitamente pediu para usar armazenamento em memória para facilitar o aprendizado da manipulação de dados diretamente no Node.js, sem banco externo. O uso do banco faz com que seu projeto dependa de configurações extras e não atenda aos critérios do desafio, o que explica a maioria dos erros que você está enfrentando.
+Manter essa organização é fundamental para que a API funcione e seja facilmente compreendida. Recomendo que você crie esse arquivo `INSTRUCTIONS.md` com as informações que a atividade pede, e revise a estrutura para garantir que todos os arquivos estejam no lugar certo. Isso ajuda até na hora de rodar comandos automáticos que dependem dessa organização.
 
 ---
 
-### 2. **Inconsistências nos nomes das funções exportadas e usadas**
+### 2. Conexão com o Banco de Dados (Knex e .env)
 
-No seu `casosController.js`, você chama funções do repositório como:
+Um ponto crucial que pode estar impactando várias funcionalidades é a **configuração da conexão com o banco**.
 
-```js
-const casosRepository = require("../repositories/casosRepository");
+- Seu `knexfile.js` está correto no formato, utilizando variáveis de ambiente para usuário, senha e banco.
+- O arquivo `db/db.js` importa corretamente o `knexfile` e instancia o Knex com o ambiente `development`.
 
-// Exemplo:
-const casos = await casosRepository.findAll();
-```
+Mas… você verificou se o seu arquivo `.env` está presente e com as variáveis `POSTGRES_USER`, `POSTGRES_PASSWORD` e `POSTGRES_DB` definidas corretamente? Sem isso, a conexão não será estabelecida e suas queries SQL não funcionarão.
 
-Mas no seu `casosRepository.js`, as funções são nomeadas como `getAllCasos()`, `getCasoById()`, `createCaso()`, etc. Ou seja, não existe `findAll()` nem `findById()` no repositório, o que vai gerar erros de execução.
+Além disso, seu `docker-compose.yml` está configurado para usar essas variáveis, mas se o `.env` estiver ausente ou incompleto, o container do PostgreSQL pode não estar rodando como esperado, ou sua API não vai conseguir se conectar.
 
-Você precisa alinhar os nomes das funções chamadas no controller com as que estão implementadas no repositório. Por exemplo, no controller:
-
-```js
-const casos = await casosRepository.getAllCasos();
-```
-
-Isso é fundamental para que suas rotas funcionem corretamente.
+**Dica:** Teste a conexão manualmente para garantir que o banco está ativo e que o Node.js consegue se conectar via Knex, por exemplo, rodando um script simples que faz um `select` em alguma tabela.
 
 ---
 
-### 3. **Falta de implementação dos métodos PATCH no repositório dos agentes**
+### 3. Migrations e Seeds: Verifique se foram executados
 
-No seu `agentesController.js`, você chama:
+Vi que você criou a migration (`db/migrations/20250806182031_solution_migrations.js`) para criar as tabelas `agentes` e `casos`, e os seeds para popular as tabelas. Isso é ótimo! Porém, se as tabelas não existem no banco, ou estão vazias, suas queries vão falhar e o sistema não vai encontrar dados para retornar.
 
-```js
-const atualizado = await agentesRepository.patchAgente(req.params.id, data);
+Confirme se você executou os comandos:
+
+```bash
+knex migrate:latest
+knex seed:run
 ```
 
-Mas no seu `agentesRepository.js` não existe uma função `patchAgente`. Você só tem:
+Ou, se preferir, via `npm scripts` ou manualmente. Sem isso, as tabelas não existirão, e isso causará erros em todos os endpoints que tentam acessar o banco.
 
-```js
-async function updateAgente(id, agente) { ... }
-async function deleteAgente(id) { ... }
-```
+---
 
-Sem a função `patchAgente`, sua rota PATCH para agentes nunca vai funcionar, causando erros 404 ou 500.
+### 4. Inconsistências nos Repositórios e Controllers
 
-Você precisa implementar o método `patchAgente` no seu repositório para atualizar parcialmente um agente, algo como:
+Agora, vamos olhar o que pode estar impactando as operações CRUD.
+
+- **No `agentesRepository.js`**, você implementou as funções básicas, mas faltou a função `patchAgente` que está sendo chamada no controller:
 
 ```js
 async function patchAgente(id, data) {
-  const agente = await getAgenteById(id);
-  if (!agente) return null;
-  const updatedAgente = { ...agente, ...data };
-  await updateAgente(id, updatedAgente);
-  return updatedAgente;
+  return await db("agentes").where({ id }).update(data).returning("*");
 }
 ```
 
----
+Sem essa função, o controller que chama `patchAgente` vai falhar, pois o método não existe.
 
-### 4. **Validação dos IDs: não estão usando UUID**
+- O mesmo vale para o `casosRepository.js`: as funções chamadas no controller são `findAll`, `findById`, `create`, `update`, `patch`, `remove`, mas no seu código as funções têm nomes diferentes, como `getAllCasos`, `getCasoById`, `createCaso`, `updateCaso`, `deleteCaso`.
 
-Você recebeu uma penalidade porque os IDs usados para agentes e casos não são UUIDs. Isso é importante para garantir que cada recurso tenha um identificador único e seguro.
+Você precisa alinhar os nomes das funções usadas nos controllers com as funções exportadas nos repositories.
 
-No seu código, não vi nenhum lugar onde você gera ou valida UUIDs para os IDs. Por exemplo, ao criar um novo agente, você poderia gerar um UUID assim:
+Por exemplo, no `casosController.js` você chama:
 
 ```js
-const { v4: uuidv4 } = require("uuid");
+const casos = await casosRepository.findAll();
+```
 
-function createAgente(agente) {
-  const newAgente = { id: uuidv4(), ...agente };
-  agentes.push(newAgente);
-  return newAgente;
+Mas no `casosRepository.js` não existe `findAll`, e sim `getAllCasos`.
+
+Isso gera erro de função não encontrada, e por isso suas rotas não funcionam.
+
+**Solução:** Padronize os nomes. Exemplo, no `casosRepository.js`:
+
+```js
+async function findAll() {
+  return await db("casos").select("*");
+}
+
+async function findById(id) {
+  return await db("casos").where({ id }).first();
+}
+
+async function create(caso) {
+  return await db("casos").insert(caso).returning("*");
+}
+
+async function update(id, caso) {
+  return await db("casos").where({ id }).update(caso).returning("*");
+}
+
+async function patch(id, data) {
+  return await db("casos").where({ id }).update(data).returning("*");
+}
+
+async function remove(id) {
+  return await db("casos").where({ id }).del();
+}
+
+module.exports = {
+  findAll,
+  findById,
+  create,
+  update,
+  patch,
+  remove,
+};
+```
+
+Faça o mesmo para os agentes.
+
+---
+
+### 5. Tratamento dos Retornos das Queries
+
+Outro ponto que observei é que, em alguns lugares, você espera que o retorno de um `update` ou `insert` seja um array, e em outros, um objeto.
+
+Por exemplo, em `createAgente` no controller:
+
+```js
+const novoAgente = await agentesRepository.createAgente({
+  nome,
+  dataDeIncorporacao,
+  cargo,
+});
+res.status(201).json(novoAgente[0]);
+```
+
+Isso está correto, pois o Knex retorna um array com os registros inseridos.
+
+Porém, no `updateAgente`:
+
+```js
+const atualizado = await agentesRepository.updateAgente(req.params.id, {
+  nome,
+  dataDeIncorporacao,
+  cargo,
+});
+if (!atualizado.length)
+  return notFoundResponse(res, "Agente não encontrado");
+res.json(atualizado[0]);
+```
+
+Está correto também, mas no `deleteAgente` você faz:
+
+```js
+const sucesso = await agentesRepository.deleteAgente(req.params.id);
+if (!sucesso) return notFoundResponse(res, "Agente não encontrado");
+res.status(204).send();
+```
+
+Aqui, `sucesso` é o número de linhas deletadas. Isso está certo.
+
+Mas no `casosRepository.js`, as funções `updateCaso` e `deleteCaso` retornam o resultado, mas no controller você espera que `updateCaso` retorne um objeto, e `deleteCaso` retorne um boolean.
+
+Tenha atenção para sempre tratar o retorno corretamente, para evitar erros silenciosos.
+
+---
+
+### 6. Validação e Tratamento de Erros
+
+Você fez um bom trabalho implementando validação dos campos, como verificar campos obrigatórios, formato de datas e status. Isso é essencial para uma API robusta! 👏
+
+Mas percebi que no arquivo `utils/erroHandler.js` (que você nomeou como `erroHandler.js` — atenção à grafia correta do nome do arquivo para evitar erros de importação), você exporta funções como `invalidPayloadResponse` e `notFoundResponse`. Certifique-se que o nome do arquivo está correto e que as importações batem com o nome real.
+
+---
+
+### 7. Endpoints de Filtragem e Funcionalidades Bônus
+
+Você tentou implementar endpoints de filtragem e busca avançada, mas eles não estão funcionando ainda. Isso é normal, pois para esses filtros você precisa:
+
+- Criar rotas específicas para receber query params.
+- Implementar no repository queries com `where`, `whereLike`, `orderBy` do Knex para realizar as buscas com filtros e ordenações.
+
+Por exemplo, para filtrar casos por status:
+
+```js
+async function getCasosByStatus(status) {
+  return await db("casos").where({ status });
 }
 ```
 
-Sem isso, seu sistema pode criar IDs numéricos sequenciais ou deixar o ID em branco, o que não atende ao requisito.
-
----
-
-### 5. **Endpoints de filtros e buscas avançadas não implementados**
-
-Os testes bônus falharam principalmente porque você não implementou os filtros, ordenações e buscas por parâmetros como status do caso, agente responsável, ou data de incorporação.
-
-Por exemplo, no seu `casosRoutes.js` você tem:
+E na rota/controller, você pode fazer algo como:
 
 ```js
-router.get("/", casosController.getAllCasos);
-```
-
-Mas não tem um tratamento para query params, tipo:
-
-```js
-router.get("/", casosController.getCasosFiltrados);
+router.get("/filter", casosController.filterCasos);
 ```
 
 E no controller:
 
 ```js
-async function getCasosFiltrados(req, res) {
-  const { status, agente_id, keywords } = req.query;
-  // lógica para filtrar os casos com base nos parâmetros
+async function filterCasos(req, res) {
+  const { status } = req.query;
+  if (!status) return res.status(400).json({ error: "Status é obrigatório" });
+  const casos = await casosRepository.getCasosByStatus(status);
+  res.json(casos);
 }
 ```
 
-Implementar esses filtros vai melhorar muito sua API e te colocar na frente!
+Assim você vai conseguir implementar essas funcionalidades extras que são muito valorizadas.
 
 ---
 
-### 6. **Nomes de arquivos e pastas devem seguir o padrão esperado**
+## Recomendações de Aprendizado para Você 🚀
 
-Seu arquivo `utils/erroHandler.js` está com o nome correto, mas no feedback esperado aparece como `errorHandler.js`. Atenção a esses detalhes de nomenclatura, pois eles podem quebrar importações em sistemas case-sensitive.
+- Para garantir que seu banco esteja configurado corretamente e que o Knex se conecte bem, confira este vídeo que explica como configurar o PostgreSQL com Docker e conectar na aplicação Node.js:  
+  [Configuração de Banco de Dados com Docker e Knex](http://googleusercontent.com/youtube.com/docker-postgresql-node)
 
----
+- Para entender melhor sobre migrations e seeds e como executá-los, veja a documentação oficial do Knex:  
+  [Knex.js Migrations](https://knexjs.org/guide/migrations.html)  
+  [Knex.js Seeds](http://googleusercontent.com/youtube.com/knex-seeds)
 
-## ✨ Dicas para você avançar com confiança
+- Para aprender sobre como usar o Query Builder do Knex e montar suas queries corretamente, recomendo este guia:  
+  [Knex Query Builder](https://knexjs.org/guide/query-builder.html)
 
-- **Armazenamento em memória:** Comece criando arrays simples para `agentes` e `casos` dentro dos repositórios e manipule esses arrays com métodos como `push`, `find`, `filter`, `map` e `splice`. Isso vai te ajudar a entender toda a lógica sem complicações de banco de dados.
+- Para entender a arquitetura MVC e organizar seu projeto de forma escalável, este vídeo é ótimo:  
+  [Arquitetura MVC em Node.js](https://youtu.be/bGN_xNc4A1k?si=Nj38J_8RpgsdQ-QH)
 
-- **UUID:** Use a biblioteca `uuid` para gerar IDs únicos. Isso é fundamental para as operações de busca, atualização e deleção funcionarem corretamente.
-
-- **Validação e tratamento de erros:** Continue usando funções utilitárias para validar datas, status e campos obrigatórios. Isso é uma boa prática e seu código já está indo bem nesse aspecto.
-
-- **Rotas e controllers:** Alinhe os nomes das funções entre rotas, controllers e repositórios para evitar erros de função não encontrada.
-
-- **Filtros:** Para os filtros, aproveite o uso de `req.query` para receber parâmetros opcionais e filtre os arrays em memória com `filter`.
-
----
-
-## 📚 Recursos que vão te ajudar demais
-
-- Para entender melhor como organizar rotas, controllers e repositories, e criar uma API REST com Express.js:  
-  https://youtu.be/bGN_xNc4A1k?si=Nj38J_8RpgsdQ-QH
-
-- Para aprender a validar dados e tratar erros com status HTTP corretamente:  
-  https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_
-
-- Para aprender a manipular arrays em JavaScript (fundamental para armazenar os dados em memória):  
-  https://youtu.be/glSgUKA5LjE?si=t9G2NsC8InYAU9cI
-
-- Para entender o uso do UUID para IDs únicos:  
-  https://www.npmjs.com/package/uuid (documentação oficial)
+- Para aprimorar a validação de dados e tratamento de erros na API, confira:  
+  [Validação e Tratamento de Erros HTTP](https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_)
 
 ---
 
-## 📝 Resumo dos principais pontos para focar
+## Resumo dos Pontos Principais para Melhorar ⚡
 
-- [ ] **Trocar o acesso ao banco de dados por armazenamento em memória usando arrays nos repositórios.**  
-- [ ] **Corrigir os nomes das funções chamadas no controller para bater com as que existem no repositório.**  
-- [ ] **Implementar os métodos PATCH nos repositórios para suportar atualizações parciais.**  
-- [ ] **Gerar e validar IDs no formato UUID para agentes e casos.**  
-- [ ] **Implementar filtros e ordenações para as rotas GET usando query parameters.**  
-- [ ] **Atenção à nomenclatura dos arquivos e funções para evitar erros de importação.**
+- ✅ Organize seu projeto conforme a estrutura esperada e inclua o arquivo `INSTRUCTIONS.md`.
+- ✅ Verifique se o `.env` está configurado corretamente para a conexão com o banco.
+- ✅ Confirme que as migrations e seeds foram executadas para criar e popular as tabelas.
+- ✅ Padronize os nomes das funções nos repositories para que batam com as chamadas nos controllers.
+- ✅ Implemente as funções `patchAgente` e `patchCaso` nos repositories, pois estão sendo usadas nos controllers.
+- ✅ Confira o tratamento correto dos retornos das queries Knex (arrays, objetos, números).
+- ✅ Valide o nome do arquivo `errorHandler.js` para evitar erros de importação.
+- ✅ Implemente endpoints de filtragem para funcionalidades extras, usando query params e Knex.
+- ✅ Teste sua API manualmente com ferramentas como Postman ou Insomnia para garantir que tudo responde corretamente.
 
 ---
 
-Gu1san, você está no caminho certo e com algumas correções vai conseguir fazer sua API funcionar perfeitamente! 🚀 Não desanime com as dificuldades iniciais, pois elas são a base para você se tornar um desenvolvedor cada vez melhor. Qualquer dúvida, volte aqui que eu te ajudo! 😉
+Gu1san, você está no caminho certo e tem uma base muito boa! Com esses ajustes, sua API vai ganhar robustez e atender a todos os requisitos esperados. Continue praticando e não hesite em explorar os recursos que indiquei para aprofundar seu conhecimento. Estou aqui torcendo pelo seu sucesso! 💪✨
 
-Continue firme e bora codar! 💻🔥
+Se precisar de ajuda para entender qualquer ponto, é só chamar. Vamos juntos! 🚀👮‍♂️
 
 Abraços do seu Code Buddy! 🤖❤️
 
