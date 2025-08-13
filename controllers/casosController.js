@@ -76,13 +76,13 @@ async function updateCaso(req, res) {
     });
   }
 
+  if (errors.length > 0) {
+    return invalidPayloadResponse(res, errors);
+  }
+
   const agenteExiste = await verifyAgent(agente_id);
   if (!agenteExiste) {
     return notFoundResponse(res, "Agente não encontrado");
-  }
-
-  if (errors.length > 0) {
-    return invalidPayloadResponse(res, errors);
   }
 
   const atualizado = await casosRepository.updateCaso(req.params.id, {
@@ -92,7 +92,7 @@ async function updateCaso(req, res) {
     agente_id,
   });
 
-  if (!atualizado) return notFoundResponse(res, "Caso não encontrado");
+  if (!atualizado.length) return notFoundResponse(res, "Caso não encontrado");
 
   res.json(atualizado[0]);
 }
@@ -134,7 +134,7 @@ async function patchCaso(req, res) {
 
   const atualizado = await casosRepository.patchCaso(req.params.id, data);
 
-  if (!atualizado) return notFoundResponse(res, "Caso não encontrado");
+  if (!atualizado.length) return notFoundResponse(res, "Caso não encontrado");
 
   res.json(atualizado[0]);
 }

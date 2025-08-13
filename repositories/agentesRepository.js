@@ -8,6 +8,10 @@ async function getAgenteById(id) {
   return await db("agentes").where({ id }).first();
 }
 
+async function getAgentesByCargo(cargo) {
+  return await db("agentes").where({ cargo });
+}
+
 async function createAgente(agente) {
   return await db("agentes").insert(agente).returning("*");
 }
@@ -29,6 +33,7 @@ async function deleteAgente(id) {
 module.exports = {
   getAllAgentes,
   getAgenteById,
+  getAgentesByCargo,
   createAgente,
   patchAgente,
   updateAgente,
