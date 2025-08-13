@@ -3,7 +3,7 @@ const {
   verifyDate,
   invalidPayloadResponse,
   notFoundResponse,
-} = require("../utils/erroHandler");
+} = require("../utils/errorHandler");
 
 async function getAllAgentes(req, res) {
   try {
