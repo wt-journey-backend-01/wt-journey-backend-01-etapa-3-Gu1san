@@ -12,18 +12,25 @@ async function createAgente(agente) {
   return await db("agentes").insert(agente).returning("*");
 }
 
+async function patchAgente(id, agente) {
+  return await db("agentes").where({ id }).update(agente).returning("*");
+}
+
 async function updateAgente(id, agente) {
   return await db("agentes").where({ id }).update(agente).returning("*");
 }
 
 async function deleteAgente(id) {
-  return await db("agentes").where({ id }).del();
+  const deletedRows = await db("agentes").where({ id }).del();
+
+  return deletedRows > 0;
 }
 
 module.exports = {
   getAllAgentes,
   getAgenteById,
   createAgente,
+  patchAgente,
   updateAgente,
   deleteAgente,
 };

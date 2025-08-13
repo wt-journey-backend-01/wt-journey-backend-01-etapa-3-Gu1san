@@ -4,17 +4,17 @@ const {
   verifyAgent,
   invalidPayloadResponse,
   notFoundResponse,
-} = require("../utils/erroHandler");
+} = require("../utils/errorHandler");
 
 // GET /casos
 async function getAllCasos(req, res) {
-  const casos = await casosRepository.findAll();
+  const casos = await casosRepository.getAllCasos();
   res.json(casos);
 }
 
 // GET /casos/:id
 async function getCasoById(req, res) {
-  const caso = await casosRepository.findById(req.params.id);
+  const caso = await casosRepository.getCasoById(req.params.id);
   if (!caso) return notFoundResponse(res, "Caso não encontrado");
   res.json(caso);
 }
@@ -43,14 +43,14 @@ async function createCaso(req, res) {
     return invalidPayloadResponse(res, errors);
   }
 
-  const novoCaso = await casosRepository.create({
+  const novoCaso = await casosRepository.createCaso({
     titulo,
     descricao,
     status,
     agente_id,
   });
 
-  res.status(201).json(novoCaso);
+  res.status(201).json(novoCaso[0]);
 }
 
 // PUT /casos/:id
@@ -85,7 +85,7 @@ async function updateCaso(req, res) {
     return invalidPayloadResponse(res, errors);
   }
 
-  const atualizado = await casosRepository.update(req.params.id, {
+  const atualizado = await casosRepository.updateCaso(req.params.id, {
     titulo,
     descricao,
     status,
@@ -94,7 +94,7 @@ async function updateCaso(req, res) {
 
   if (!atualizado) return notFoundResponse(res, "Caso não encontrado");
 
-  res.json(atualizado);
+  res.json(atualizado[0]);
 }
 
 // PATCH /casos/:id
@@ -132,20 +132,22 @@ async function patchCaso(req, res) {
 
   if (errors.length > 0) return invalidPayloadResponse(res, errors);
 
-  const atualizado = await casosRepository.patch(req.params.id, data);
+  const atualizado = await casosRepository.patchCaso(req.params.id, data);
 
   if (!atualizado) return notFoundResponse(res, "Caso não encontrado");
 
-  res.json(atualizado);
+  res.json(atualizado[0]);
 }
 
 // DELETE /casos/:id
 async function deleteCaso(req, res) {
-  const sucesso = await casosRepository.remove(req.params.id);
-
-  if (!sucesso) return notFoundResponse(res, "Caso não encontrado");
-
-  res.status(204).send();
+  try {
+    const sucesso = await casosRepository.deleteCaso(req.params.id);
+    if (!sucesso) return notFoundResponse(res, "Caso não encontrado");
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao deletar caso" });
+  }
 }
 
 module.exports = {
